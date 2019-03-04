@@ -3,15 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Colors : MonoBehaviour {
-	Material Block_Color;
-	int r = 0;
-	int g = 0;
-	int b = 0;
-	int a = 255;
+	private Material Block_Color;
+	private int r = 0;
+	private int g = 0;
+	private int b = 0;
+	private int a = 255;
 
 	void Start() {
 		Block_Color = this.GetComponent<Renderer>().material;
-		//StartCoroutine(Color_Change());
 	}
 
 	void Update () {
