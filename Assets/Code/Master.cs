@@ -13,6 +13,7 @@ public class Master : MonoBehaviour {
 	public string Mode = "Random";
 	public float Speed = .4f;
 	public int[][] Sequence;
+	public string String_Input;
 	[Header("Camera Perspective")]
 	public bool View_2D = false;
 	public bool View_3D = true;
@@ -30,7 +31,8 @@ public class Master : MonoBehaviour {
 			Clone.name = "Block #" + Linear_to_Matrix(i);
 			Blocks_Generated[Linear_to_Matrix(i)] = Clone;
 		}
-		//StartCoroutine(Infinite());
+		Debug.Log(Matrix_to_Linear(3));
+		StartCoroutine(SwipeText(String_Input));
 	}
 
 	void Update () {
@@ -47,8 +49,9 @@ public class Master : MonoBehaviour {
 		}
 	}
 
-	IEnumerator TextToASCII (string Input) {
+	IEnumerator StringToASCII (string Input) {
 		foreach(char x in Input) {
+			Wipe();
 			ASCII((int)x-32,0); //start the ascii table with the 32nd char
 			yield return new WaitForSeconds(1);
 		}
@@ -56,17 +59,19 @@ public class Master : MonoBehaviour {
 
 	IEnumerator Cycle () {
 		for (int i = 0; i < 94; i++) {
+			Wipe();
 			ASCII(i,0);
 			yield return new WaitForSeconds(1);
 		}
 	}
 
-	IEnumerator Infinite () { //TODO: Make work!
-		for (int i = 0; i < 94; i++) {
-			for (int a = -22; a < 100; a++) {
-				ASCII((int)'F'-32, a);
-				yield return new WaitForSeconds(.2f);
+	IEnumerator SwipeText (string Input) {
+		for (int a = (Size-1)*-1-10; a <= (Size)*(Input.Length-1)+8; a++) {
+			Wipe();
+			for (int i = 0; i < Input.Length; i++) {
+				ASCII((int)Input[i]-32, a-(8*i));
 			}
+			yield return new WaitForSeconds(.1f);
 		}
 	}
 
@@ -98,13 +103,10 @@ public class Master : MonoBehaviour {
 		return y*Size+x;
 	}
 
-	void ASCII (int Number, int offset) { //TODO: Get rid of wrap effect
-		foreach (GameObject x in Blocks_Generated) { //Reset function
-			x.GetComponent<Renderer>().material.color = new Color(255,255,255,255);
-		}
+	void ASCII (int Letter, int offset) { //TODO: Get rid of wrap effect
 		StreamReader Input = new StreamReader(new MemoryStream(Input_Text.bytes));
 		string Line = null;
-		for (int i = 0; i < Number; i++) {
+		for (int i = 0; i < Letter; i++) {
 			Line = Input.ReadLine();
 		}
 		if (Line != null) {
@@ -112,27 +114,47 @@ public class Master : MonoBehaviour {
 			for (int i = 0, a = 0; i < Line.Length; i++) {
 				if (i == 0) {
 					Coordinates[a] += Line[0];
-					if (Line[1] != ',') {
+					if (Line[1] != ',') { //TODO: Make this work for more than 2 digits
 						Coordinates[a] += Line[1];
 					}
-					Coordinates[a] = Linear_to_Matrix(Matrix_to_Linear(int.Parse(Coordinates[a]))-offset).ToString(); //temp
+					if (offset >= -8 && Linear_to_Matrix(Matrix_to_Linear(int.Parse(Coordinates[a]))-offset) < ((offset+10)*10)+20) {
+						Coordinates[a] = null;
+					}else if (offset <= -13 && Linear_to_Matrix(Matrix_to_Linear(int.Parse(Coordinates[a]))-offset) > (offset+20)*10) {
+						Coordinates[a] = null;
+					}else if (int.Parse(Coordinates[a])-offset >= 0) {
+						Coordinates[a] = Linear_to_Matrix(Matrix_to_Linear(int.Parse(Coordinates[a]))-offset).ToString(); //temp
+					}
 					a++;
 				}
 				if (Line[i] == ',') {
 					Coordinates[a] += Line[i+1];
-					if (Line[i+2] != ',') {
+					if (Line[i+2] != ',') { //TODO: Make this work for more than 2 digits
 						Coordinates[a] += Line[i+2];
 					}
-					Coordinates[a] = Linear_to_Matrix(Matrix_to_Linear(int.Parse(Coordinates[a]))-offset).ToString(); //temp
+					if (offset >= -8 && Linear_to_Matrix(Matrix_to_Linear(int.Parse(Coordinates[a]))-offset) < ((offset+10)*10)+20) {
+						Coordinates[a] = null;
+					}else if (offset <= -13 && Linear_to_Matrix(Matrix_to_Linear(int.Parse(Coordinates[a]))-offset) > (offset+20)*10) {
+						Coordinates[a] = null;
+					}else if (int.Parse(Coordinates[a])-offset >= 0) {
+						Coordinates[a] = Linear_to_Matrix(Matrix_to_Linear(int.Parse(Coordinates[a]))-offset).ToString(); //temp
+					}
 					a++;
 				}
 			}
 			for (int i = 0; i < Coordinates.Length; i++) {
 				if (Coordinates[i] != null) {
-					Blocks_Generated[int.Parse(Coordinates[i])].GetComponent<Renderer>().material.color = new Color(255,0,0,255);
+					if(int.Parse(Coordinates[i]) >= 0 && int.Parse(Coordinates[i]) < Blocks_Generated.Length) {
+						Blocks_Generated[int.Parse(Coordinates[i])].GetComponent<Renderer>().material.color = new Color(255,0,0,255);
+					}
 				}
 			}
 		}
 		Input.Close();
+	}
+
+	void Wipe () {
+		foreach (GameObject x in Blocks_Generated) { //Reset function
+			x.GetComponent<Renderer>().material.color = new Color(255,255,255,255);
+		}
 	}
 }
