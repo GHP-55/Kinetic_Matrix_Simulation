@@ -9,7 +9,7 @@ public class Master : MonoBehaviour {
 	public GameObject Block_Prefab;
 	public GameObject[] Blocks_Generated;
 	[Header("Values")]
-	public int Size = 100;
+	public int Size = 10;
 	public string Mode = "Random";
 	public float Speed = .4f;
 	public int[][] Sequence;
@@ -31,7 +31,7 @@ public class Master : MonoBehaviour {
 			Clone.name = "Block #" + Linear_to_Matrix(i);
 			Blocks_Generated[Linear_to_Matrix(i)] = Clone;
 		}
-		Debug.Log(Matrix_to_Linear(3));
+		Debug.Log(Linear_to_Matrix(3));
 		StartCoroutine(SwipeText(String_Input));
 	}
 
